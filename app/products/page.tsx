@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
+import { CartButton } from "@/components/cart/cart-button"
+import { CartDrawer } from "@/components/cart/cart-drawer"
 import { supabase } from "@/lib/supabase"
 
 async function getProducts(searchParams: { category?: string; search?: string }) {
@@ -81,10 +83,13 @@ export default async function ProductsPage({
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-8">
               <Link href="/" className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">MD</span>
-                </div>
-                <span className="text-xl font-bold text-gray-900">MD Electronics</span>
+                <Image
+                  src="/md-electronics-logo.png"
+                  alt="MD Electronics"
+                  width={150}
+                  height={38}
+                  className="h-8 w-auto"
+                />
               </Link>
               <nav className="hidden md:flex space-x-8">
                 <Link href="/" className="text-gray-600 hover:text-blue-600">
@@ -113,17 +118,15 @@ export default async function ProductsPage({
                 <Input placeholder="What are you looking for?" className="pl-10 w-64 border-gray-300" />
               </div>
               <Heart className="w-6 h-6 text-gray-600 hover:text-blue-600 cursor-pointer" />
-              <div className="relative">
-                <ShoppingCart className="w-6 h-6 text-gray-600 hover:text-blue-600 cursor-pointer" />
-                <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  0
-                </span>
-              </div>
+              <CartButton />
               <User className="w-6 h-6 text-gray-600 hover:text-blue-600 cursor-pointer" />
             </div>
           </div>
         </div>
       </header>
+
+      {/* Cart Drawer */}
+      <CartDrawer />
 
       {/* Breadcrumb */}
       <div className="bg-gray-50 py-4">
@@ -292,10 +295,13 @@ export default async function ProductsPage({
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div className="space-y-4">
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">MD</span>
-                </div>
-                <span className="text-xl font-bold">MD Electronics</span>
+                <Image
+                  src="/md-electronics-logo.png"
+                  alt="MD Electronics"
+                  width={150}
+                  height={38}
+                  className="h-8 w-auto brightness-0 invert"
+                />
               </div>
               <p className="text-gray-400 text-sm">
                 Your trusted partner for premium home appliances. Quality products, exceptional service, and competitive

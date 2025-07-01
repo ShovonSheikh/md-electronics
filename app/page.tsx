@@ -18,6 +18,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { CartButton } from "@/components/cart/cart-button"
+import { CartDrawer } from "@/components/cart/cart-drawer"
 import { supabase } from "@/lib/supabase"
 
 async function getFeaturedProducts() {
@@ -185,9 +187,9 @@ export default async function HomePage() {
                 <Image
                   src="/md-electronics-logo.png"
                   alt="MD Electronics"
-                  width={280}
-                  height={70}
-                  className="h-16 sm:h-20 lg:h-24 w-auto group-hover:scale-105 transition-transform duration-300"
+                  width={320}
+                  height={80}
+                  className="h-20 sm:h-24 lg:h-28 w-auto group-hover:scale-105 transition-transform duration-300"
                   priority
                 />
               </Link>
@@ -228,12 +230,7 @@ export default async function HomePage() {
                   <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 hover:text-red-500 transition-colors" />
                 </Button>
 
-                <Button variant="ghost" size="sm" className="p-2 sm:p-3 hover:bg-gray-100 rounded-xl relative">
-                  <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 hover:text-blue-600 transition-colors" />
-                  <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center font-medium">
-                    0
-                  </span>
-                </Button>
+                <CartButton />
 
                 <Button variant="ghost" size="sm" className="lg:hidden p-2 sm:p-3 hover:bg-gray-100 rounded-xl">
                   <Menu className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
@@ -243,6 +240,9 @@ export default async function HomePage() {
           </div>
         </div>
       </header>
+
+      {/* Cart Drawer */}
+      <CartDrawer />
 
       {/* Enhanced Hero Section */}
       <section className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-12 sm:py-16 lg:py-20">
@@ -265,10 +265,12 @@ export default async function HomePage() {
                 prices
               </p>
               <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
-                <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center space-x-3">
-                  <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span className="font-semibold">Shop Now</span>
-                </Button>
+                <Link href="/products">
+                  <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center space-x-3">
+                    <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="font-semibold">Shop Now</span>
+                  </Button>
+                </Link>
                 <div className="flex items-center space-x-3">
                   <div className="flex space-x-1">
                     {[1, 2, 3, 4, 5].map((star) => (

@@ -22,6 +22,7 @@ import {
   AlertTriangle,
   Save,
   X,
+  RefreshCw,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -161,8 +162,8 @@ function AdminPanelContent() {
       if (productsError) {
         console.error("Error fetching products:", productsError)
         toast({
-          title: "Error",
-          description: "Failed to fetch products",
+          title: "Database Error",
+          description: "Failed to fetch products. Please check your database connection and permissions.",
           variant: "destructive",
         })
       } else {
@@ -177,6 +178,11 @@ function AdminPanelContent() {
 
       if (categoriesError) {
         console.error("Error fetching categories:", categoriesError)
+        toast({
+          title: "Database Error",
+          description: "Failed to fetch categories.",
+          variant: "destructive",
+        })
       } else {
         setCategories(categoriesData || [])
       }
@@ -186,6 +192,11 @@ function AdminPanelContent() {
 
       if (brandsError) {
         console.error("Error fetching brands:", brandsError)
+        toast({
+          title: "Database Error",
+          description: "Failed to fetch brands.",
+          variant: "destructive",
+        })
       } else {
         setBrands(brandsData || [])
       }
@@ -199,14 +210,19 @@ function AdminPanelContent() {
 
       if (ordersError) {
         console.error("Error fetching orders:", ordersError)
+        toast({
+          title: "Database Error",
+          description: "Failed to fetch orders.",
+          variant: "destructive",
+        })
       } else {
         setOrders(ordersData || [])
       }
     } catch (error) {
       console.error("Error fetching data:", error)
       toast({
-        title: "Error",
-        description: "Failed to fetch data from database",
+        title: "Connection Error",
+        description: "Failed to connect to database. Please check your internet connection.",
         variant: "destructive",
       })
     } finally {
@@ -293,8 +309,8 @@ function AdminPanelContent() {
     } catch (error: any) {
       console.error("Error saving product:", error)
       toast({
-        title: "Error",
-        description: error.message || "Failed to save product",
+        title: "Database Error",
+        description: error.message || "Failed to save product. Please check your permissions.",
         variant: "destructive",
       })
     }
@@ -307,6 +323,7 @@ function AdminPanelContent() {
     }
 
     try {
+      setLoading(true)
       const { error } = await supabase.from("products").delete().eq("id", productId)
 
       if (error) {
@@ -322,10 +339,12 @@ function AdminPanelContent() {
     } catch (error: any) {
       console.error("Error deleting product:", error)
       toast({
-        title: "Error",
-        description: error.message || "Failed to delete product",
+        title: "Database Error",
+        description: error.message || "Failed to delete product. Please check your permissions.",
         variant: "destructive",
       })
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -404,9 +423,9 @@ function AdminPanelContent() {
               <Image
                 src="/md-electronics-logo.png"
                 alt="MD Electronics"
-                width={150}
-                height={38}
-                className="h-8 w-auto"
+                width={200}
+                height={50}
+                className="h-12 w-auto"
               />
               <h1 className="text-xl font-semibold text-gray-900">Admin Panel</h1>
             </div>
@@ -469,9 +488,22 @@ function AdminPanelContent() {
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-gray-900">Dashboard</h2>
                 <Button onClick={fetchData} disabled={loading}>
+                  <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                   {loading ? "Refreshing..." : "Refresh Data"}
                 </Button>
               </div>
+
+              {/* Connection Status */}
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-2">
+                    <div className={`w-3 h-3 rounded-full ${products.length > 0 ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                    <span className="text-sm font-medium">
+                      Database Status: {products.length > 0 ? 'Connected' : 'Connection Issues'}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
 
               {/* Stats Cards */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -564,6 +596,7 @@ function AdminPanelContent() {
                 <h2 className="text-2xl font-bold text-gray-900">Products</h2>
                 <div className="flex space-x-2">
                   <Button onClick={fetchData} variant="outline" disabled={loading}>
+                    <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                     {loading ? "Refreshing..." : "Refresh"}
                   </Button>
                   <Button onClick={() => setShowProductModal(true)}>
@@ -673,6 +706,7 @@ function AdminPanelContent() {
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-gray-900">Orders</h2>
                 <Button onClick={fetchData} variant="outline" disabled={loading}>
+                  <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                   {loading ? "Refreshing..." : "Refresh"}
                 </Button>
               </div>
