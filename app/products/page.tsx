@@ -66,7 +66,10 @@ export default async function ProductsPage({
 }: {
   searchParams: { category?: string; search?: string }
 }) {
-  const products = await getProducts(searchParams)
+  // Destructure searchParams at the beginning to avoid direct access in JSX
+  const { category, search } = await searchParams
+  
+  const products = await getProducts({ category, search })
   const categories = await getCategories()
   const brands = await getBrands()
 
@@ -131,10 +134,10 @@ export default async function ProductsPage({
             </Link>
             <span className="text-gray-400">/</span>
             <span className="text-gray-900">Shop</span>
-            {searchParams.category && (
+            {category && (
               <>
                 <span className="text-gray-400">/</span>
-                <span className="text-gray-900 capitalize">{searchParams.category.replace("-", " ")}</span>
+                <span className="text-gray-900 capitalize">{category.replace("-", " ")}</span>
               </>
             )}
           </div>
@@ -144,8 +147,8 @@ export default async function ProductsPage({
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
-            {searchParams.category
-              ? `${searchParams.category.replace("-", " ").replace(/\b\w/g, (l) => l.toUpperCase())}`
+            {category
+              ? `${category.replace("-", " ").replace(/\b\w/g, (l) => l.toUpperCase())}`
               : "All Products"}
           </h1>
           <div className="text-sm text-gray-600">Showing {products.length} products</div>
@@ -158,15 +161,15 @@ export default async function ProductsPage({
             <div>
               <h3 className="font-bold text-gray-900 mb-4 pb-2 border-b border-gray-200">CATEGORIES</h3>
               <div className="space-y-3">
-                {categories.map((category) => (
-                  <div key={category.id} className="flex items-center justify-between">
+                {categories.map((cat) => (
+                  <div key={cat.id} className="flex items-center justify-between">
                     <Link
-                      href={`/products?category=${category.slug}`}
+                      href={`/products?category=${cat.slug}`}
                       className={`text-sm hover:text-blue-600 transition-colors ${
-                        searchParams.category === category.slug ? "text-blue-600 font-medium" : "text-gray-700"
+                        category === cat.slug ? "text-blue-600 font-medium" : "text-gray-700"
                       }`}
                     >
-                      {category.name}
+                      {cat.name}
                     </Link>
                   </div>
                 ))}
@@ -321,13 +324,13 @@ export default async function ProductsPage({
             <div>
               <h4 className="font-bold mb-4">Categories</h4>
               <div className="space-y-2 text-sm text-gray-400">
-                {categories.slice(0, 5).map((category) => (
+                {categories.slice(0, 5).map((cat) => (
                   <Link
-                    key={category.id}
-                    href={`/products?category=${category.slug}`}
+                    key={cat.id}
+                    href={`/products?category=${cat.slug}`}
                     className="hover:text-white transition-colors block"
                   >
-                    {category.name}
+                    {cat.name}
                   </Link>
                 ))}
               </div>
