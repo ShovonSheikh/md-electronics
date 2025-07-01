@@ -22,7 +22,6 @@ import {
   AlertTriangle,
   Save,
   X,
-  RefreshCw,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -35,8 +34,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/lib/supabase"
-import { AdminGuard } from "@/components/auth/admin-guard"
-import { useAuth } from "@/hooks/use-auth"
+
+const ADMIN_EMAIL = "admin@mdelectronics.com"
+const ADMIN_PASSWORD = "admin123"
 
 interface Product {
   id: string
@@ -89,11 +89,14 @@ interface Order {
   created_at: string
 }
 
-function AdminPanelContent() {
+export default function AdminPanel() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState("dashboard")
   const { toast } = useToast()
-  const { signOut } = useAuth()
 
   // Data states
   const [products, setProducts] = useState<Product[]>([])
@@ -129,20 +132,51 @@ function AdminPanelContent() {
   const router = useRouter()
 
   useEffect(() => {
-    fetchData()
+    if (isAuthenticated) {
+      fetchData()
+    }
+  }, [isAuthenticated])
+
+  // Check authentication on mount
+  useEffect(() => {
+    const isAuth = localStorage.getItem("admin_authenticated")
+    if (isAuth === "true") {
+      setIsAuthenticated(true)
+    }
   }, [])
 
-  const handleLogout = async () => {
-    try {
-      await signOut()
-      router.push('/')
-    } catch (error: any) {
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault()
+    setError("")
+    setLoading(true)
+
+    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+      setIsAuthenticated(true)
+      localStorage.setItem("admin_authenticated", "true")
       toast({
-        title: "Error",
-        description: error.message || "Failed to log out",
+        title: "Login Successful",
+        description: "Welcome to the admin panel!",
+      })
+    } else {
+      setError("Invalid email or password")
+      toast({
+        title: "Login Failed",
+        description: "Invalid credentials. Please try again.",
         variant: "destructive",
       })
     }
+    setLoading(false)
+  }
+
+  const handleLogout = () => {
+    setIsAuthenticated(false)
+    localStorage.removeItem("admin_authenticated")
+    setEmail("")
+    setPassword("")
+    toast({
+      title: "Logged Out",
+      description: "You have been successfully logged out.",
+    })
   }
 
   const fetchData = async () => {
@@ -162,8 +196,8 @@ function AdminPanelContent() {
       if (productsError) {
         console.error("Error fetching products:", productsError)
         toast({
-          title: "Database Error",
-          description: "Failed to fetch products. Please check your database connection and permissions.",
+          title: "Error",
+          description: "Failed to fetch products",
           variant: "destructive",
         })
       } else {
@@ -178,11 +212,6 @@ function AdminPanelContent() {
 
       if (categoriesError) {
         console.error("Error fetching categories:", categoriesError)
-        toast({
-          title: "Database Error",
-          description: "Failed to fetch categories.",
-          variant: "destructive",
-        })
       } else {
         setCategories(categoriesData || [])
       }
@@ -192,11 +221,6 @@ function AdminPanelContent() {
 
       if (brandsError) {
         console.error("Error fetching brands:", brandsError)
-        toast({
-          title: "Database Error",
-          description: "Failed to fetch brands.",
-          variant: "destructive",
-        })
       } else {
         setBrands(brandsData || [])
       }
@@ -210,19 +234,14 @@ function AdminPanelContent() {
 
       if (ordersError) {
         console.error("Error fetching orders:", ordersError)
-        toast({
-          title: "Database Error",
-          description: "Failed to fetch orders.",
-          variant: "destructive",
-        })
       } else {
         setOrders(ordersData || [])
       }
     } catch (error) {
       console.error("Error fetching data:", error)
       toast({
-        title: "Connection Error",
-        description: "Failed to connect to database. Please check your internet connection.",
+        title: "Error",
+        description: "Failed to fetch data from database",
         variant: "destructive",
       })
     } finally {
@@ -309,8 +328,8 @@ function AdminPanelContent() {
     } catch (error: any) {
       console.error("Error saving product:", error)
       toast({
-        title: "Database Error",
-        description: error.message || "Failed to save product. Please check your permissions.",
+        title: "Error",
+        description: error.message || "Failed to save product",
         variant: "destructive",
       })
     }
@@ -323,7 +342,6 @@ function AdminPanelContent() {
     }
 
     try {
-      setLoading(true)
       const { error } = await supabase.from("products").delete().eq("id", productId)
 
       if (error) {
@@ -339,12 +357,10 @@ function AdminPanelContent() {
     } catch (error: any) {
       console.error("Error deleting product:", error)
       toast({
-        title: "Database Error",
-        description: error.message || "Failed to delete product. Please check your permissions.",
+        title: "Error",
+        description: error.message || "Failed to delete product",
         variant: "destructive",
       })
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -413,6 +429,61 @@ function AdminPanelContent() {
     totalBrands: brands.length,
   }
 
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <Image
+              src="/md-electronics-logo.png"
+              alt="MD Electronics"
+              width={200}
+              height={50}
+              className="h-12 w-auto mx-auto mb-4"
+            />
+            <CardTitle>Admin Login</CardTitle>
+            <CardDescription>Enter your credentials to access the admin panel</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="admin@mdelectronics.com"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter password"
+                  required
+                />
+              </div>
+              {error && <div className="text-red-500 text-sm">{error}</div>}
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? "Logging in..." : "Login"}
+              </Button>
+            </form>
+            <div className="mt-4 p-3 bg-blue-50 rounded-lg text-sm">
+              <p className="font-medium">Demo Credentials:</p>
+              <p>Email: admin@mdelectronics.com</p>
+              <p>Password: admin123</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -423,9 +494,9 @@ function AdminPanelContent() {
               <Image
                 src="/md-electronics-logo.png"
                 alt="MD Electronics"
-                width={200}
-                height={50}
-                className="h-12 w-auto"
+                width={150}
+                height={38}
+                className="h-8 w-auto"
               />
               <h1 className="text-xl font-semibold text-gray-900">Admin Panel</h1>
             </div>
@@ -488,22 +559,9 @@ function AdminPanelContent() {
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-gray-900">Dashboard</h2>
                 <Button onClick={fetchData} disabled={loading}>
-                  <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                   {loading ? "Refreshing..." : "Refresh Data"}
                 </Button>
               </div>
-
-              {/* Connection Status */}
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center space-x-2">
-                    <div className={`w-3 h-3 rounded-full ${products.length > 0 ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                    <span className="text-sm font-medium">
-                      Database Status: {products.length > 0 ? 'Connected' : 'Connection Issues'}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
 
               {/* Stats Cards */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -596,7 +654,6 @@ function AdminPanelContent() {
                 <h2 className="text-2xl font-bold text-gray-900">Products</h2>
                 <div className="flex space-x-2">
                   <Button onClick={fetchData} variant="outline" disabled={loading}>
-                    <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                     {loading ? "Refreshing..." : "Refresh"}
                   </Button>
                   <Button onClick={() => setShowProductModal(true)}>
@@ -706,7 +763,6 @@ function AdminPanelContent() {
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-gray-900">Orders</h2>
                 <Button onClick={fetchData} variant="outline" disabled={loading}>
-                  <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                   {loading ? "Refreshing..." : "Refresh"}
                 </Button>
               </div>
@@ -1055,13 +1111,5 @@ function AdminPanelContent() {
         </DialogContent>
       </Dialog>
     </div>
-  )
-}
-
-export default function AdminPanel({ searchParams }: { searchParams?: Record<string, string | string[]> }) {
-  return (
-    <AdminGuard>
-      <AdminPanelContent />
-    </AdminGuard>
   )
 }

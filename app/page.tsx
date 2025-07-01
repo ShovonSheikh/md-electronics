@@ -18,8 +18,6 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { CartButton } from "@/components/cart/cart-button"
-import { CartDrawer } from "@/components/cart/cart-drawer"
 import { supabase } from "@/lib/supabase"
 
 async function getFeaturedProducts() {
@@ -177,19 +175,19 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Enhanced Header with Bigger Logo */}
+      {/* Enhanced Header with New Logo */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-20 sm:h-24">
+          <div className="flex items-center justify-between h-16 sm:h-20">
             {/* Logo and Navigation */}
             <div className="flex items-center space-x-6 lg:space-x-12">
-              <Link href="/" className="flex items-center group">
+              <Link href="/" className="flex items-center group leading-7 leading-10 leading-4 leading-3 leading-3 leading-9 leading-3 leading-9 leading-9 leading-8 leading-7 leading-3">
                 <Image
                   src="/md-electronics-logo.png"
                   alt="MD Electronics"
-                  width={320}
-                  height={80}
-                  className="h-20 sm:h-24 lg:h-28 w-auto group-hover:scale-105 transition-transform duration-300"
+                  width={200}
+                  height={50}
+                  className="h-12 sm:h-14 lg:h-16 w-auto group-hover:scale-105 transition-transform duration-300"
                   priority
                 />
               </Link>
@@ -230,7 +228,12 @@ export default async function HomePage() {
                   <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 hover:text-red-500 transition-colors" />
                 </Button>
 
-                <CartButton />
+                <Button variant="ghost" size="sm" className="p-2 sm:p-3 hover:bg-gray-100 rounded-xl relative">
+                  <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 hover:text-blue-600 transition-colors" />
+                  <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center font-medium">
+                    0
+                  </span>
+                </Button>
 
                 <Button variant="ghost" size="sm" className="lg:hidden p-2 sm:p-3 hover:bg-gray-100 rounded-xl">
                   <Menu className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
@@ -240,9 +243,6 @@ export default async function HomePage() {
           </div>
         </div>
       </header>
-
-      {/* Cart Drawer */}
-      <CartDrawer />
 
       {/* Enhanced Hero Section */}
       <section className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-12 sm:py-16 lg:py-20">
@@ -265,12 +265,10 @@ export default async function HomePage() {
                 prices
               </p>
               <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
-                <Link href="/products">
-                  <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center space-x-3">
-                    <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
-                    <span className="font-semibold">Shop Now</span>
-                  </Button>
-                </Link>
+                <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center space-x-3">
+                  <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span className="font-semibold">Shop Now</span>
+                </Button>
                 <div className="flex items-center space-x-3">
                   <div className="flex space-x-1">
                     {[1, 2, 3, 4, 5].map((star) => (
@@ -409,9 +407,9 @@ export default async function HomePage() {
                 <Image
                   src="/md-electronics-logo.png"
                   alt="MD Electronics"
-                  width={240}
-                  height={60}
-                  className="h-16 sm:h-18 w-auto brightness-0 invert"
+                  width={200}
+                  height={50}
+                  className="h-12 sm:h-14 w-auto brightness-0 invert"
                 />
               </div>
               <p className="text-gray-400 leading-relaxed text-sm sm:text-base">

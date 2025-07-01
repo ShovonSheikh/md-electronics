@@ -5,10 +5,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { CartButton } from "@/components/cart/cart-button"
-import { CartDrawer } from "@/components/cart/cart-drawer"
-import { AddToCartButton } from "@/components/product/add-to-cart-button"
-import { BuyNowButton } from "@/components/product/buy-now-button"
 import { supabase } from "@/lib/supabase"
 import { notFound } from "next/navigation"
 
@@ -72,13 +68,10 @@ export default async function ProductDetailPage({
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-8">
               <Link href="/" className="flex items-center space-x-2">
-                <Image
-                  src="/md-electronics-logo.png"
-                  alt="MD Electronics"
-                  width={150}
-                  height={38}
-                  className="h-8 w-auto"
-                />
+                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">MD</span>
+                </div>
+                <span className="text-xl font-bold text-gray-900">MD Electronics</span>
               </Link>
               <nav className="hidden md:flex space-x-8">
                 <Link href="/" className="text-gray-600 hover:text-blue-600">
@@ -107,15 +100,17 @@ export default async function ProductDetailPage({
                 <Input placeholder="What are you looking for?" className="pl-10 w-64 border-gray-300" />
               </div>
               <Heart className="w-6 h-6 text-gray-600 hover:text-blue-600 cursor-pointer" />
-              <CartButton />
+              <div className="relative">
+                <ShoppingCart className="w-6 h-6 text-gray-600 hover:text-blue-600 cursor-pointer" />
+                <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  0
+                </span>
+              </div>
               <User className="w-6 h-6 text-gray-600 hover:text-blue-600 cursor-pointer" />
             </div>
           </div>
         </div>
       </header>
-
-      {/* Cart Drawer */}
-      <CartDrawer />
 
       {/* Breadcrumb */}
       <div className="bg-gray-50 py-4">
@@ -225,9 +220,23 @@ export default async function ProductDetailPage({
               <span className="text-sm text-gray-600">SKU: {product.sku}</span>
             </div>
 
-            <div className="space-y-4">
-              <AddToCartButton product={product} />
-              <BuyNowButton product={product} className="w-full" />
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center border border-gray-300 rounded-lg">
+                <Button variant="ghost" size="sm" className="px-3">
+                  <Minus className="w-4 h-4" />
+                </Button>
+                <span className="px-4 py-2 border-x border-gray-300">1</span>
+                <Button variant="ghost" size="sm" className="px-3">
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
+              <Button className="flex-1 bg-blue-600 hover:bg-blue-700" disabled={product.stock_quantity === 0}>
+                <ShoppingCart className="w-4 h-4 mr-2" />
+                Add to Cart
+              </Button>
+              <Button variant="outline" size="icon">
+                <Heart className="w-4 h-4" />
+              </Button>
             </div>
 
             {product.warranty_info && (
@@ -349,13 +358,10 @@ export default async function ProductDetailPage({
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div className="space-y-4">
               <div className="flex items-center space-x-2">
-                <Image
-                  src="/md-electronics-logo.png"
-                  alt="MD Electronics"
-                  width={150}
-                  height={38}
-                  className="h-8 w-auto brightness-0 invert"
-                />
+                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">MD</span>
+                </div>
+                <span className="text-xl font-bold">MD Electronics</span>
               </div>
               <p className="text-gray-400 text-sm">
                 Your trusted partner for premium home appliances. Quality products, exceptional service, and competitive

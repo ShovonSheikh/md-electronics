@@ -5,8 +5,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
-import { CartButton } from "@/components/cart/cart-button"
-import { CartDrawer } from "@/components/cart/cart-drawer"
 import { supabase } from "@/lib/supabase"
 
 async function getProducts(searchParams: { category?: string; search?: string }) {
@@ -68,10 +66,7 @@ export default async function ProductsPage({
 }: {
   searchParams: { category?: string; search?: string }
 }) {
-  // Destructure searchParams at the beginning to avoid direct access in JSX
-  const { category, search } = await searchParams
-  
-  const products = await getProducts({ category, search })
+  const products = await getProducts(searchParams)
   const categories = await getCategories()
   const brands = await getBrands()
 
@@ -83,13 +78,10 @@ export default async function ProductsPage({
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-8">
               <Link href="/" className="flex items-center space-x-2">
-                <Image
-                  src="/md-electronics-logo.png"
-                  alt="MD Electronics"
-                  width={150}
-                  height={38}
-                  className="h-8 w-auto"
-                />
+                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">MD</span>
+                </div>
+                <span className="text-xl font-bold text-gray-900">MD Electronics</span>
               </Link>
               <nav className="hidden md:flex space-x-8">
                 <Link href="/" className="text-gray-600 hover:text-blue-600">
@@ -118,15 +110,17 @@ export default async function ProductsPage({
                 <Input placeholder="What are you looking for?" className="pl-10 w-64 border-gray-300" />
               </div>
               <Heart className="w-6 h-6 text-gray-600 hover:text-blue-600 cursor-pointer" />
-              <CartButton />
+              <div className="relative">
+                <ShoppingCart className="w-6 h-6 text-gray-600 hover:text-blue-600 cursor-pointer" />
+                <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  0
+                </span>
+              </div>
               <User className="w-6 h-6 text-gray-600 hover:text-blue-600 cursor-pointer" />
             </div>
           </div>
         </div>
       </header>
-
-      {/* Cart Drawer */}
-      <CartDrawer />
 
       {/* Breadcrumb */}
       <div className="bg-gray-50 py-4">
@@ -137,10 +131,10 @@ export default async function ProductsPage({
             </Link>
             <span className="text-gray-400">/</span>
             <span className="text-gray-900">Shop</span>
-            {category && (
+            {searchParams.category && (
               <>
                 <span className="text-gray-400">/</span>
-                <span className="text-gray-900 capitalize">{category.replace("-", " ")}</span>
+                <span className="text-gray-900 capitalize">{searchParams.category.replace("-", " ")}</span>
               </>
             )}
           </div>
@@ -150,8 +144,8 @@ export default async function ProductsPage({
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
-            {category
-              ? `${category.replace("-", " ").replace(/\b\w/g, (l) => l.toUpperCase())}`
+            {searchParams.category
+              ? `${searchParams.category.replace("-", " ").replace(/\b\w/g, (l) => l.toUpperCase())}`
               : "All Products"}
           </h1>
           <div className="text-sm text-gray-600">Showing {products.length} products</div>
@@ -164,15 +158,15 @@ export default async function ProductsPage({
             <div>
               <h3 className="font-bold text-gray-900 mb-4 pb-2 border-b border-gray-200">CATEGORIES</h3>
               <div className="space-y-3">
-                {categories.map((cat) => (
-                  <div key={cat.id} className="flex items-center justify-between">
+                {categories.map((category) => (
+                  <div key={category.id} className="flex items-center justify-between">
                     <Link
-                      href={`/products?category=${cat.slug}`}
+                      href={`/products?category=${category.slug}`}
                       className={`text-sm hover:text-blue-600 transition-colors ${
-                        category === cat.slug ? "text-blue-600 font-medium" : "text-gray-700"
+                        searchParams.category === category.slug ? "text-blue-600 font-medium" : "text-gray-700"
                       }`}
                     >
-                      {cat.name}
+                      {category.name}
                     </Link>
                   </div>
                 ))}
@@ -295,13 +289,10 @@ export default async function ProductsPage({
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div className="space-y-4">
               <div className="flex items-center space-x-2">
-                <Image
-                  src="/md-electronics-logo.png"
-                  alt="MD Electronics"
-                  width={150}
-                  height={38}
-                  className="h-8 w-auto brightness-0 invert"
-                />
+                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">MD</span>
+                </div>
+                <span className="text-xl font-bold">MD Electronics</span>
               </div>
               <p className="text-gray-400 text-sm">
                 Your trusted partner for premium home appliances. Quality products, exceptional service, and competitive
@@ -330,13 +321,13 @@ export default async function ProductsPage({
             <div>
               <h4 className="font-bold mb-4">Categories</h4>
               <div className="space-y-2 text-sm text-gray-400">
-                {categories.slice(0, 5).map((cat) => (
+                {categories.slice(0, 5).map((category) => (
                   <Link
-                    key={cat.id}
-                    href={`/products?category=${cat.slug}`}
+                    key={category.id}
+                    href={`/products?category=${category.slug}`}
                     className="hover:text-white transition-colors block"
                   >
-                    {cat.name}
+                    {category.name}
                   </Link>
                 ))}
               </div>
