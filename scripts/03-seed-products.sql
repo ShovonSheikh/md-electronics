@@ -11,7 +11,7 @@ INSERT INTO products (
   is_active, is_featured, category_id, brand_id, created_at, updated_at
 ) VALUES
 -- Refrigerators
-(gen_random_uuid(), 'Samsung French Door Refrigerator 28 cu ft', 'samsung-french-door-28', 
+(uuid_generate_v4(), 'Samsung French Door Refrigerator 28 cu ft', 'samsung-french-door-28', 
  'Experience the ultimate in food preservation with this spacious French door refrigerator featuring Twin Cooling Plus technology, FlexZone drawer, and Energy Star certification.', 
  'Spacious French door refrigerator with advanced cooling technology', 
  1299.99, 1599.99, 15, 'REF-SAM-001',
@@ -23,7 +23,7 @@ INSERT INTO products (
  (SELECT id FROM brand_ids WHERE slug = 'samsung'),
  now(), now()),
 
-(gen_random_uuid(), 'LG Side-by-Side Refrigerator 26 cu ft', 'lg-side-by-side-26',
+(uuid_generate_v4(), 'LG Side-by-Side Refrigerator 26 cu ft', 'lg-side-by-side-26',
  'Modern side-by-side refrigerator with InstaView Door-in-Door technology, smart connectivity, and efficient linear compressor for optimal performance.',
  'Smart side-by-side refrigerator with InstaView technology',
  1199.99, 1399.99, 12, 'REF-LG-002',
@@ -36,7 +36,7 @@ INSERT INTO products (
  now(), now()),
 
 -- Ovens
-(gen_random_uuid(), 'Bosch Built-in Electric Oven 30"', 'bosch-builtin-electric-30',
+(uuid_generate_v4(), 'Bosch Built-in Electric Oven 30"', 'bosch-builtin-electric-30',
  'Professional-grade built-in electric oven with European convection, self-cleaning function, and precise temperature control for perfect cooking results.',
  'Professional built-in electric oven with convection',
  899.99, 1099.99, 8, 'OVN-BSH-001',
@@ -48,7 +48,7 @@ INSERT INTO products (
  (SELECT id FROM brand_ids WHERE slug = 'bosch'),
  now(), now()),
 
-(gen_random_uuid(), 'Whirlpool Gas Range 30"', 'whirlpool-gas-range-30',
+(uuid_generate_v4(), 'Whirlpool Gas Range 30"', 'whirlpool-gas-range-30',
  'Versatile gas range with 5-burner cooktop, convection oven, and AccuBake temperature management system for consistent cooking results.',
  'Gas range with 5-burner cooktop and convection oven',
  749.99, 899.99, 10, 'OVN-WHP-002',
@@ -61,7 +61,7 @@ INSERT INTO products (
  now(), now()),
 
 -- Televisions
-(gen_random_uuid(), 'Samsung 65" QLED 4K Smart TV', 'samsung-65-qled-4k',
+(uuid_generate_v4(), 'Samsung 65" QLED 4K Smart TV', 'samsung-65-qled-4k',
  'Immerse yourself in stunning 4K entertainment with Quantum Dot technology, HDR10+ support, and Tizen smart platform with voice control.',
  'Premium 65" QLED 4K Smart TV with Quantum Dot technology',
  1499.99, 1799.99, 20, 'TV-SAM-001',
@@ -73,7 +73,7 @@ INSERT INTO products (
  (SELECT id FROM brand_ids WHERE slug = 'samsung'),
  now(), now()),
 
-(gen_random_uuid(), 'Sony 55" OLED 4K Smart TV', 'sony-55-oled-4k',
+(uuid_generate_v4(), 'Sony 55" OLED 4K Smart TV', 'sony-55-oled-4k',
  'Experience perfect blacks and infinite contrast with OLED technology, Dolby Vision, and Google TV platform for endless entertainment.',
  'Premium 55" OLED 4K Smart TV with perfect blacks',
  1299.99, 1599.99, 15, 'TV-SNY-002',
@@ -86,7 +86,7 @@ INSERT INTO products (
  now(), now()),
 
 -- Air Conditioners
-(gen_random_uuid(), 'LG 12000 BTU Window AC Unit', 'lg-12000-btu-window-ac',
+(uuid_generate_v4(), 'LG 12000 BTU Window AC Unit', 'lg-12000-btu-window-ac',
  'Efficient window air conditioner with dual inverter technology, smart connectivity, and energy-saving features for optimal comfort.',
  'Energy-efficient 12000 BTU window AC with smart features',
  449.99, 549.99, 25, 'AC-LG-001',
@@ -98,7 +98,7 @@ INSERT INTO products (
  (SELECT id FROM brand_ids WHERE slug = 'lg'),
  now(), now()),
 
-(gen_random_uuid(), 'Samsung 18000 BTU Split AC System', 'samsung-18000-btu-split',
+(uuid_generate_v4(), 'Samsung 18000 BTU Split AC System', 'samsung-18000-btu-split',
  'Powerful split air conditioning system with WindFree technology, smart controls, and whisper-quiet operation for large spaces.',
  'Powerful 18000 BTU split AC with WindFree technology',
  899.99, 1099.99, 12, 'AC-SAM-002',
@@ -111,7 +111,7 @@ INSERT INTO products (
  now(), now()),
 
 -- Washing Machines
-(gen_random_uuid(), 'Whirlpool Top Load Washer 4.3 cu ft', 'whirlpool-top-load-43',
+(uuid_generate_v4(), 'Whirlpool Top Load Washer 4.3 cu ft', 'whirlpool-top-load-43',
  'Reliable top-load washing machine with Adaptive Wash technology, multiple wash cycles, and energy-efficient operation.',
  'Reliable top-load washer with Adaptive Wash technology',
  599.99, 699.99, 18, 'WM-WHP-001',
@@ -123,7 +123,7 @@ INSERT INTO products (
  (SELECT id FROM brand_ids WHERE slug = 'whirlpool'),
  now(), now()),
 
-(gen_random_uuid(), 'LG Front Load Washer 4.5 cu ft', 'lg-front-load-45',
+(uuid_generate_v4(), 'LG Front Load Washer 4.5 cu ft', 'lg-front-load-45',
  'Advanced front-load washer with TurboWash technology, steam cleaning, and smart connectivity for superior cleaning performance.',
  'Advanced front-load washer with TurboWash technology',
  799.99, 949.99, 14, 'WM-LG-002',
@@ -136,7 +136,7 @@ INSERT INTO products (
  now(), now()),
 
 -- Deep Freezers
-(gen_random_uuid(), 'Haier Chest Freezer 7.1 cu ft', 'haier-chest-freezer-71',
+(uuid_generate_v4(), 'Haier Chest Freezer 7.1 cu ft', 'haier-chest-freezer-71',
  'Spacious chest freezer with energy-efficient operation, adjustable temperature control, and removable storage baskets.',
  'Energy-efficient 7.1 cu ft chest freezer',
  299.99, 349.99, 22, 'FRZ-HAI-001',
@@ -148,7 +148,7 @@ INSERT INTO products (
  (SELECT id FROM brand_ids WHERE slug = 'haier'),
  now(), now()),
 
-(gen_random_uuid(), 'Electrolux Upright Freezer 14 cu ft', 'electrolux-upright-14',
+(uuid_generate_v4(), 'Electrolux Upright Freezer 14 cu ft', 'electrolux-upright-14',
  'Large upright freezer with frost-free operation, LED lighting, and multiple storage compartments for organized freezing.',
  'Large 14 cu ft upright freezer with frost-free operation',
  699.99, 799.99, 8, 'FRZ-ELX-002',

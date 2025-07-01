@@ -231,7 +231,7 @@ export default async function ProductsPage({
                       alt={product.name}
                       width={200}
                       height={200}
-                      className="w-full h-48 object-contain group-hover:scale-105 transition-transform"
+                      className="w-full h-48 object-contain"
                     />
                   </div>
                   <div className="p-4">
