@@ -1024,7 +1024,7 @@ function AdminPanelContent() {
   )
 }
 
-export default function AdminPanel() {
+export default function AdminPanel({ searchParams }: { searchParams?: Record<string, string | string[]> }) {
   return (
     <AdminGuard>
       <AdminPanelContent />
