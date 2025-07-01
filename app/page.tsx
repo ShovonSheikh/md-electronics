@@ -175,19 +175,19 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Enhanced Header with New Logo */}
+      {/* Enhanced Header with Bigger Logo */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16 sm:h-20">
+          <div className="flex items-center justify-between h-20 sm:h-24">
             {/* Logo and Navigation */}
             <div className="flex items-center space-x-6 lg:space-x-12">
-              <Link href="/" className="flex items-center group leading-7 leading-10 leading-4 leading-3 leading-3 leading-9 leading-3 leading-9 leading-9 leading-8 leading-7 leading-3">
+              <Link href="/" className="flex items-center group">
                 <Image
                   src="/md-electronics-logo.png"
                   alt="MD Electronics"
-                  width={200}
-                  height={50}
-                  className="h-12 sm:h-14 lg:h-16 w-auto group-hover:scale-105 transition-transform duration-300"
+                  width={280}
+                  height={70}
+                  className="h-16 sm:h-20 lg:h-24 w-auto group-hover:scale-105 transition-transform duration-300"
                   priority
                 />
               </Link>
@@ -407,9 +407,9 @@ export default async function HomePage() {
                 <Image
                   src="/md-electronics-logo.png"
                   alt="MD Electronics"
-                  width={200}
-                  height={50}
-                  className="h-12 sm:h-14 w-auto brightness-0 invert"
+                  width={240}
+                  height={60}
+                  className="h-16 sm:h-18 w-auto brightness-0 invert"
                 />
               </div>
               <p className="text-gray-400 leading-relaxed text-sm sm:text-base">
