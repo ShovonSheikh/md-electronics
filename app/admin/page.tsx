@@ -34,9 +34,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/lib/supabase"
-
-const ADMIN_EMAIL = "admin@mdelectronics.com"
-const ADMIN_PASSWORD = "admin123"
+import { AdminGuard } from "@/components/auth/admin-guard"
+import { useAuth } from "@/hooks/use-auth"
 
 interface Product {
   id: string
@@ -89,14 +88,11 @@ interface Order {
   created_at: string
 }
 
-export default function AdminPanel() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
+function AdminPanelContent() {
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState("dashboard")
   const { toast } = useToast()
+  const { signOut } = useAuth()
 
   // Data states
   const [products, setProducts] = useState<Product[]>([])
@@ -132,51 +128,20 @@ export default function AdminPanel() {
   const router = useRouter()
 
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchData()
-    }
-  }, [isAuthenticated])
-
-  // Check authentication on mount
-  useEffect(() => {
-    const isAuth = localStorage.getItem("admin_authenticated")
-    if (isAuth === "true") {
-      setIsAuthenticated(true)
-    }
+    fetchData()
   }, [])
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
-    setLoading(true)
-
-    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-      setIsAuthenticated(true)
-      localStorage.setItem("admin_authenticated", "true")
+  const handleLogout = async () => {
+    try {
+      await signOut()
+      router.push('/')
+    } catch (error: any) {
       toast({
-        title: "Login Successful",
-        description: "Welcome to the admin panel!",
-      })
-    } else {
-      setError("Invalid email or password")
-      toast({
-        title: "Login Failed",
-        description: "Invalid credentials. Please try again.",
+        title: "Error",
+        description: error.message || "Failed to log out",
         variant: "destructive",
       })
     }
-    setLoading(false)
-  }
-
-  const handleLogout = () => {
-    setIsAuthenticated(false)
-    localStorage.removeItem("admin_authenticated")
-    setEmail("")
-    setPassword("")
-    toast({
-      title: "Logged Out",
-      description: "You have been successfully logged out.",
-    })
   }
 
   const fetchData = async () => {
@@ -427,61 +392,6 @@ export default function AdminPanel() {
     totalRevenue: orders.reduce((sum, order) => sum + order.total_amount, 0),
     totalCategories: categories.length,
     totalBrands: brands.length,
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <Image
-              src="/md-electronics-logo.png"
-              alt="MD Electronics"
-              width={200}
-              height={50}
-              className="h-12 w-auto mx-auto mb-4"
-            />
-            <CardTitle>Admin Login</CardTitle>
-            <CardDescription>Enter your credentials to access the admin panel</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@mdelectronics.com"
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter password"
-                  required
-                />
-              </div>
-              {error && <div className="text-red-500 text-sm">{error}</div>}
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Logging in..." : "Login"}
-              </Button>
-            </form>
-            <div className="mt-4 p-3 bg-blue-50 rounded-lg text-sm">
-              <p className="font-medium">Demo Credentials:</p>
-              <p>Email: admin@mdelectronics.com</p>
-              <p>Password: admin123</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
   }
 
   return (
@@ -1111,5 +1021,13 @@ export default function AdminPanel() {
         </DialogContent>
       </Dialog>
     </div>
+  )
+}
+
+export default function AdminPanel() {
+  return (
+    <AdminGuard>
+      <AdminPanelContent />
+    </AdminGuard>
   )
 }
