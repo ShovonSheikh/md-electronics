@@ -75,13 +75,17 @@ export default async function ProductsPage({
       {/* Header */}
       <header className="border-b border-gray-200">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-20 sm:h-24">
             <div className="flex items-center space-x-8">
               <Link href="/" className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">MD</span>
-                </div>
-                <span className="text-xl font-bold text-gray-900">MD Electronics</span>
+                <Image
+                  src="/md-electronics-logo.png"
+                  alt="MD Electronics"
+                  width={300}
+                  height={75}
+                  className="h-16 sm:h-18 w-auto"
+                  priority
+                />
               </Link>
               <nav className="hidden md:flex space-x-8">
                 <Link href="/" className="text-gray-600 hover:text-blue-600">
@@ -289,10 +293,13 @@ export default async function ProductsPage({
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div className="space-y-4">
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">MD</span>
-                </div>
-                <span className="text-xl font-bold">MD Electronics</span>
+                <Image
+                  src="/md-electronics-logo.png"
+                  alt="MD Electronics"
+                  width={250}
+                  height={63}
+                  className="h-16 w-auto brightness-0 invert"
+                />
               </div>
               <p className="text-gray-400 text-sm">
                 Your trusted partner for premium home appliances. Quality products, exceptional service, and competitive
