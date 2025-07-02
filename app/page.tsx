@@ -200,7 +200,7 @@ export default async function HomePage() {
                   <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-blue-600 rounded-full"></div>
                 </Link>
                 <Link href="/products" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
-                  Shop
+                  Products
                 </Link>
                 <Link href="#" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
                   Categories
