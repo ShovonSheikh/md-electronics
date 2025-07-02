@@ -81,8 +81,8 @@ export default async function ProductsPage({
                 <Image
                   src="/md-electronics-logo.png"
                   alt="MD Electronics"
-                  width={300}
-                  height={75}
+                  width={450}
+                  height={120}
                   className="h-16 sm:h-18 w-auto"
                   priority
                 />
