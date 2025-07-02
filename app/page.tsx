@@ -189,7 +189,7 @@ export default async function HomePage() {
                   alt="MD Electronics"
                   width={450}
                   height={110}
-                  className="h-18 sm:h-20 lg:h-24 w-auto group-hover:scale-105 transition-transform duration-300"
+                  className="h-22 sm:h-24 lg:h-28 w-auto group-hover:scale-105 transition-transform duration-300"
                   priority
                 />
               </Link>
