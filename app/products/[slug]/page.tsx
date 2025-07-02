@@ -71,8 +71,8 @@ export default async function ProductDetailPage({
                 <Image
                   src="/md-electronics-logo.png"
                   alt="MD Electronics"
-                  width={300}
-                  height={75}
+                  width={450}
+                  height={120}
                   className="h-16 sm:h-18 w-auto"
                   priority
                 />
@@ -82,7 +82,7 @@ export default async function ProductDetailPage({
                   Home
                 </Link>
                 <Link href="/products" className="text-gray-600 hover:text-blue-600">
-                  Shop
+                  Products
                 </Link>
                 <Link href="#" className="text-gray-600 hover:text-blue-600">
                   Pages
