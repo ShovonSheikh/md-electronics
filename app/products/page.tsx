@@ -92,7 +92,7 @@ export default async function ProductsPage({
                   Home
                 </Link>
                 <Link href="/products" className="text-gray-900 hover:text-blue-600 font-medium">
-                  Shop
+                  Products
                 </Link>
                 <Link href="#" className="text-gray-600 hover:text-blue-600">
                   Pages
