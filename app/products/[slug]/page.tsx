@@ -1,121 +1,188 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { Star, Search, Heart, ShoppingCart, User, ArrowLeft, Plus, Minus } from "lucide-react"
+import { Star, ArrowLeft, Plus, Minus, Heart, ShoppingCart } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { MainHeader } from "@/components/layout/main-header"
+import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/lib/supabase"
 import { notFound } from "next/navigation"
 
-async function getProduct(slug: string) {
-  const { data: product, error } = await supabase
-    .from("products")
-    .select(`
-      *,
-      categories (name, slug),
-      brands (name, slug)
-    `)
-    .eq("slug", slug)
-    .eq("is_active", true)
-    .single()
-
-  if (error || !product) {
-    return null
-  }
-
-  return product
+interface Product {
+  id: string
+  name: string
+  slug: string
+  description: string
+  short_description: string
+  price: number
+  original_price: number | null
+  stock_quantity: number
+  sku: string
+  images: string[]
+  specifications: Record<string, any>
+  warranty_info: string | null
+  categories?: { name: string; slug: string }
+  brands?: { name: string; slug: string }
 }
 
-async function getRelatedProducts(categoryId: string, currentProductId: string) {
-  const { data: products, error } = await supabase
-    .from("products")
-    .select(`
-      *,
-      categories (name, slug),
-      brands (name, slug)
-    `)
-    .eq("category_id", categoryId)
-    .eq("is_active", true)
-    .neq("id", currentProductId)
-    .limit(4)
-
-  if (error) {
-    return []
-  }
-
-  return products || []
-}
-
-export default async function ProductDetailPage({
+export default function ProductDetailPage({
   params,
 }: {
   params: Promise<{ slug: string }>
 }) {
-  const resolvedParams = await params
-  const product = await getProduct(resolvedParams.slug)
+  const [product, setProduct] = useState<Product | null>(null)
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([])
+  const [quantity, setQuantity] = useState(1)
+  const [loading, setLoading] = useState(true)
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0)
+  const { toast } = useToast()
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const resolvedParams = await params
+        const productData = await getProduct(resolvedParams.slug)
+        
+        if (!productData) {
+          notFound()
+        }
+        
+        setProduct(productData)
+        
+        // Fetch related products
+        if (productData.categories) {
+          const related = await getRelatedProducts(productData.categories.slug, productData.id)
+          setRelatedProducts(related)
+        }
+      } catch (error) {
+        console.error("Error fetching product:", error)
+        notFound()
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProduct()
+  }, [params])
+
+  const getProduct = async (slug: string) => {
+    const { data: product, error } = await supabase
+      .from("products")
+      .select(`
+        *,
+        categories (name, slug),
+        brands (name, slug)
+      `)
+      .eq("slug", slug)
+      .eq("is_active", true)
+      .single()
+
+    if (error || !product) {
+      return null
+    }
+
+    return product
+  }
+
+  const getRelatedProducts = async (categorySlug: string, currentProductId: string) => {
+    // First get the category ID
+    const { data: category } = await supabase
+      .from("categories")
+      .select("id")
+      .eq("slug", categorySlug)
+      .single()
+
+    if (!category) return []
+
+    const { data: products, error } = await supabase
+      .from("products")
+      .select(`
+        *,
+        categories (name, slug),
+        brands (name, slug)
+      `)
+      .eq("category_id", category.id)
+      .eq("is_active", true)
+      .neq("id", currentProductId)
+      .limit(4)
+
+    if (error) {
+      return []
+    }
+
+    return products || []
+  }
+
+  const handleQuantityChange = (change: number) => {
+    setQuantity(prev => Math.max(1, prev + change))
+  }
+
+  const handleAddToCart = () => {
+    toast({
+      title: "Added to Cart!",
+      description: `${quantity} x ${product?.name} has been added to your cart.`,
+    })
+  }
+
+  const handleAddToWishlist = () => {
+    toast({
+      title: "Added to Wishlist!",
+      description: `${product?.name} has been added to your wishlist.`,
+    })
+  }
+
+  const handleRelatedProductWishlist = (productName: string) => {
+    toast({
+      title: "Added to Wishlist!",
+      description: `${productName} has been added to your wishlist.`,
+    })
+  }
+
+  const handleRelatedProductCart = (productName: string) => {
+    toast({
+      title: "Added to Cart!",
+      description: `${productName} has been added to your cart.`,
+    })
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white">
+        <MainHeader />
+        <div className="container mx-auto px-4 py-8">
+          <div className="grid lg:grid-cols-2 gap-12">
+            <div className="space-y-4">
+              <div className="aspect-square bg-gray-200 rounded-lg animate-pulse"></div>
+              <div className="grid grid-cols-4 gap-2">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="aspect-square bg-gray-200 rounded-lg animate-pulse"></div>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-6">
+              <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
+              <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
+              <div className="h-6 bg-gray-200 rounded animate-pulse w-1/2"></div>
+              <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   if (!product) {
     notFound()
   }
 
-  const relatedProducts = await getRelatedProducts(product.category_id, product.id)
-
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="border-b border-gray-200">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-20 sm:h-24">
-            <div className="flex items-center space-x-8">
-              <Link href="/" className="flex items-center space-x-2">
-                <Image
-                  src="/md-electronics-logo.png"
-                  alt="MD Electronics"
-                  width={450}
-                  height={120}
-                  className="h-16 sm:h-18 w-auto"
-                  priority
-                />
-              </Link>
-              <nav className="hidden md:flex space-x-8">
-                <Link href="/" className="text-gray-600 hover:text-blue-600">
-                  Home
-                </Link>
-                <Link href="/products" className="text-gray-600 hover:text-blue-600">
-                  Products
-                </Link>
-                <Link href="#" className="text-gray-600 hover:text-blue-600">
-                  Pages
-                </Link>
-                <Link href="#" className="text-gray-600 hover:text-blue-600">
-                  About
-                </Link>
-                <Link href="#" className="text-gray-600 hover:text-blue-600">
-                  Blog
-                </Link>
-                <Link href="#" className="text-gray-600 hover:text-blue-600">
-                  Contact
-                </Link>
-              </nav>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="relative hidden md:block">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <Input placeholder="What are you looking for?" className="pl-10 w-64 border-gray-300" />
-              </div>
-              <Heart className="w-6 h-6 text-gray-600 hover:text-blue-600 cursor-pointer" />
-              <div className="relative">
-                <ShoppingCart className="w-6 h-6 text-gray-600 hover:text-blue-600 cursor-pointer" />
-                <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  0
-                </span>
-              </div>
-              <User className="w-6 h-6 text-gray-600 hover:text-blue-600 cursor-pointer" />
-            </div>
-          </div>
-        </div>
-      </header>
+      <MainHeader />
 
       {/* Breadcrumb */}
       <div className="bg-gray-50 py-4">
@@ -149,7 +216,7 @@ export default async function ProductDetailPage({
           <div className="space-y-4">
             <div className="aspect-square bg-gray-50 rounded-lg overflow-hidden">
               <Image
-                src={product.images[0] || "/placeholder.svg?height=500&width=500"}
+                src={product.images[selectedImageIndex] || "/placeholder.svg?height=500&width=500"}
                 alt={product.name}
                 width={500}
                 height={500}
@@ -158,14 +225,20 @@ export default async function ProductDetailPage({
             </div>
             {product.images.length > 1 && (
               <div className="grid grid-cols-4 gap-2">
-                {product.images.slice(1, 5).map((image, index) => (
-                  <div key={index} className="aspect-square bg-gray-50 rounded-lg overflow-hidden">
+                {product.images.slice(0, 4).map((image, index) => (
+                  <div 
+                    key={index} 
+                    className={`aspect-square bg-gray-50 rounded-lg overflow-hidden cursor-pointer border-2 ${
+                      selectedImageIndex === index ? 'border-blue-500' : 'border-transparent'
+                    }`}
+                    onClick={() => setSelectedImageIndex(index)}
+                  >
                     <Image
                       src={image || "/placeholder.svg"}
-                      alt={`${product.name} ${index + 2}`}
+                      alt={`${product.name} ${index + 1}`}
                       width={100}
                       height={100}
-                      className="w-full h-full object-contain cursor-pointer hover:opacity-75"
+                      className="w-full h-full object-contain hover:opacity-75 transition-opacity"
                     />
                   </div>
                 ))}
@@ -190,12 +263,12 @@ export default async function ProductDetailPage({
                 </div>
               </div>
               <div className="flex items-center space-x-4 mb-6">
-                <span className="text-3xl font-bold text-gray-900">${product.price}</span>
+                <span className="text-3xl font-bold text-gray-900">৳{product.price}</span>
                 {product.original_price && product.original_price > product.price && (
                   <>
-                    <span className="text-xl text-gray-500 line-through">${product.original_price}</span>
+                    <span className="text-xl text-gray-500 line-through">৳{product.original_price}</span>
                     <Badge className="bg-red-100 text-red-800">
-                      Save ${(product.original_price - product.price).toFixed(2)}
+                      Save ৳{(product.original_price - product.price).toFixed(2)}
                     </Badge>
                   </>
                 )}
@@ -227,19 +300,34 @@ export default async function ProductDetailPage({
 
             <div className="flex items-center space-x-4">
               <div className="flex items-center border border-gray-300 rounded-lg">
-                <Button variant="ghost" size="sm" className="px-3">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="px-3"
+                  onClick={() => handleQuantityChange(-1)}
+                  disabled={quantity <= 1}
+                >
                   <Minus className="w-4 h-4" />
                 </Button>
-                <span className="px-4 py-2 border-x border-gray-300">1</span>
-                <Button variant="ghost" size="sm" className="px-3">
+                <span className="px-4 py-2 border-x border-gray-300">{quantity}</span>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="px-3"
+                  onClick={() => handleQuantityChange(1)}
+                >
                   <Plus className="w-4 h-4" />
                 </Button>
               </div>
-              <Button className="flex-1 bg-blue-600 hover:bg-blue-700" disabled={product.stock_quantity === 0}>
+              <Button 
+                className="flex-1 bg-blue-600 hover:bg-blue-700" 
+                disabled={product.stock_quantity === 0}
+                onClick={handleAddToCart}
+              >
                 <ShoppingCart className="w-4 h-4 mr-2" />
                 Add to Cart
               </Button>
-              <Button variant="outline" size="icon">
+              <Button variant="outline" size="icon" onClick={handleAddToWishlist}>
                 <Heart className="w-4 h-4" />
               </Button>
             </div>
@@ -311,29 +399,30 @@ export default async function ProductDetailPage({
             <h2 className="text-2xl font-bold text-gray-900 mb-8">Related Products</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {relatedProducts.map((relatedProduct) => (
-                <Link
+                <div
                   key={relatedProduct.id}
-                  href={`/products/${relatedProduct.slug}`}
                   className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group"
                 >
-                  <div className="relative p-4 bg-gray-50">
-                    {relatedProduct.original_price && relatedProduct.original_price > relatedProduct.price && (
-                      <Badge className="absolute top-2 left-2 bg-blue-600 text-white">
-                        {Math.round(
-                          ((relatedProduct.original_price - relatedProduct.price) / relatedProduct.original_price) *
-                            100,
-                        )}
-                        % Off
-                      </Badge>
-                    )}
-                    <Image
-                      src={relatedProduct.images[0] || "/placeholder.svg?height=200&width=200"}
-                      alt={relatedProduct.name}
-                      width={200}
-                      height={200}
-                      className="w-full h-40 object-contain group-hover:scale-105 transition-transform"
-                    />
-                  </div>
+                  <Link href={`/products/${relatedProduct.slug}`}>
+                    <div className="relative p-4 bg-gray-50">
+                      {relatedProduct.original_price && relatedProduct.original_price > relatedProduct.price && (
+                        <Badge className="absolute top-2 left-2 bg-blue-600 text-white">
+                          {Math.round(
+                            ((relatedProduct.original_price - relatedProduct.price) / relatedProduct.original_price) *
+                              100,
+                          )}
+                          % Off
+                        </Badge>
+                      )}
+                      <Image
+                        src={relatedProduct.images[0] || "/placeholder.svg?height=200&width=200"}
+                        alt={relatedProduct.name}
+                        width={200}
+                        height={200}
+                        className="w-full h-40 object-contain group-hover:scale-105 transition-transform"
+                      />
+                    </div>
+                  </Link>
                   <div className="p-4">
                     <div className="flex items-center space-x-1 mb-2">
                       {[1, 2, 3, 4, 5].map((star) => (
@@ -341,16 +430,39 @@ export default async function ProductDetailPage({
                       ))}
                       <span className="text-xs text-gray-500">(4.5)</span>
                     </div>
-                    <h3 className="font-medium text-gray-900 mb-2 text-sm line-clamp-2">{relatedProduct.name}</h3>
-                    <div className="flex items-center space-x-2">
-                      <span className="font-bold text-gray-900">${relatedProduct.price}</span>
+                    <Link href={`/products/${relatedProduct.slug}`}>
+                      <h3 className="font-medium text-gray-900 mb-2 text-sm line-clamp-2 hover:text-blue-600 transition-colors">
+                        {relatedProduct.name}
+                      </h3>
+                    </Link>
+                    <div className="flex items-center space-x-2 mb-3">
+                      <span className="font-bold text-gray-900">৳{relatedProduct.price}</span>
                       {relatedProduct.original_price && relatedProduct.original_price > relatedProduct.price && (
-                        <span className="text-sm text-gray-500 line-through">${relatedProduct.original_price}</span>
+                        <span className="text-sm text-gray-500 line-through">৳{relatedProduct.original_price}</span>
                       )}
                     </div>
-                    <p className="text-xs text-gray-600 mt-1">{relatedProduct.brands?.name}</p>
+                    <p className="text-xs text-gray-600 mb-3">{relatedProduct.brands?.name}</p>
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => handleRelatedProductWishlist(relatedProduct.name)}
+                      >
+                        <Heart className="w-3 h-3 mr-1" />
+                        Wishlist
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="flex-1 bg-blue-600 hover:bg-blue-700"
+                        onClick={() => handleRelatedProductCart(relatedProduct.name)}
+                      >
+                        <ShoppingCart className="w-3 h-3 mr-1" />
+                        Cart
+                      </Button>
+                    </div>
                   </div>
-                </Link>
+                </div>
               ))}
             </div>
           </section>
@@ -366,9 +478,9 @@ export default async function ProductDetailPage({
                 <Image
                   src="/md-electronics-logo.png"
                   alt="MD Electronics"
-                  width={250}
-                  height={63}
-                  className="h-16 w-auto brightness-0 invert"
+                  width={350}
+                  height={88}
+                  className="h-20 w-auto brightness-0 invert"
                 />
               </div>
               <p className="text-gray-400 text-sm">

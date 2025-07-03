@@ -1,130 +1,183 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { Star, Search, Heart, ShoppingCart, User } from "lucide-react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { Star, Heart, ShoppingCart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
+import { MainHeader } from "@/components/layout/main-header"
+import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/lib/supabase"
 
-async function getProducts(searchParams: { category?: string; search?: string }) {
-  let query = supabase
-    .from("products")
-    .select(`
-      *,
-      categories (name, slug),
-      brands (name, slug)
-    `)
-    .eq("is_active", true)
+interface Product {
+  id: string
+  name: string
+  slug: string
+  price: number
+  original_price: number | null
+  stock_quantity: number
+  images: string[]
+  categories?: { name: string; slug: string }
+  brands?: { name: string; slug: string }
+}
 
-  if (searchParams.category) {
-    const { data: category } = await supabase.from("categories").select("id").eq("slug", searchParams.category).single()
+interface Category {
+  id: string
+  name: string
+  slug: string
+}
 
-    if (category) {
-      query = query.eq("category_id", category.id)
+interface Brand {
+  id: string
+  name: string
+  slug: string
+}
+
+export default function ProductsPage() {
+  const [products, setProducts] = useState<Product[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
+  const [brands, setBrands] = useState<Brand[]>([])
+  const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState("")
+  
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const { toast } = useToast()
+
+  const categoryParam = searchParams.get("category")
+  const searchParam = searchParams.get("search")
+
+  useEffect(() => {
+    if (searchParam) {
+      setSearchQuery(searchParam)
+    }
+  }, [searchParam])
+
+  useEffect(() => {
+    fetchData()
+  }, [categoryParam, searchParam])
+
+  const fetchData = async () => {
+    setLoading(true)
+    try {
+      // Fetch products
+      const filters: any = {}
+      if (categoryParam) filters.category = categoryParam
+      if (searchParam) filters.search = searchParam
+
+      const productsData = await getProducts(filters)
+      setProducts(productsData)
+
+      // Fetch categories and brands
+      const [categoriesData, brandsData] = await Promise.all([
+        getCategories(),
+        getBrands()
+      ])
+      
+      setCategories(categoriesData)
+      setBrands(brandsData)
+    } catch (error) {
+      console.error("Error fetching data:", error)
+    } finally {
+      setLoading(false)
     }
   }
 
-  if (searchParams.search) {
-    query = query.ilike("name", `%${searchParams.search}%`)
+  const getProducts = async (filters?: {
+    category?: string
+    search?: string
+  }) => {
+    let query = supabase
+      .from("products")
+      .select(`
+        *,
+        categories (name, slug),
+        brands (name, slug)
+      `)
+      .eq("is_active", true)
+
+    if (filters?.category) {
+      const { data: category } = await supabase.from("categories").select("id").eq("slug", filters.category).single()
+      if (category) {
+        query = query.eq("category_id", category.id)
+      }
+    }
+
+    if (filters?.search) {
+      const searchTerm = `%${filters.search}%`
+      query = query.or(`name.ilike.${searchTerm},description.ilike.${searchTerm},short_description.ilike.${searchTerm},sku.ilike.${searchTerm}`)
+    }
+
+    const { data, error } = await query.order("created_at", { ascending: false })
+
+    if (error) {
+      console.error("Error fetching products:", error)
+      return []
+    }
+
+    return data || []
   }
 
-  const { data: products, error } = await query.order("created_at", { ascending: false })
-
-  if (error) {
-    console.error("Error fetching products:", error)
-    return []
+  const getCategories = async () => {
+    const { data: categories, error } = await supabase.from("categories").select("*").eq("is_active", true).order("name")
+    if (error) {
+      console.error("Error fetching categories:", error)
+      return []
+    }
+    return categories || []
   }
 
-  return products || []
-}
-
-async function getCategories() {
-  const { data: categories, error } = await supabase.from("categories").select("*").eq("is_active", true).order("name")
-
-  if (error) {
-    console.error("Error fetching categories:", error)
-    return []
+  const getBrands = async () => {
+    const { data: brands, error } = await supabase.from("brands").select("*").eq("is_active", true).order("name")
+    if (error) {
+      console.error("Error fetching brands:", error)
+      return []
+    }
+    return brands || []
   }
 
-  return categories || []
-}
-
-async function getBrands() {
-  const { data: brands, error } = await supabase.from("brands").select("*").eq("is_active", true).order("name")
-
-  if (error) {
-    console.error("Error fetching brands:", error)
-    return []
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setSearchQuery(value)
+    
+    // Update URL with search parameter
+    const params = new URLSearchParams(searchParams.toString())
+    if (value.trim()) {
+      params.set("search", value.trim())
+    } else {
+      params.delete("search")
+    }
+    
+    // Keep category if it exists
+    if (categoryParam) {
+      params.set("category", categoryParam)
+    }
+    
+    router.push(`/products?${params.toString()}`)
   }
 
-  return brands || []
-}
+  const handleWishlistClick = (productName: string) => {
+    toast({
+      title: "Added to Wishlist!",
+      description: `${productName} has been added to your wishlist.`,
+    })
+  }
 
-export default async function ProductsPage({
-  searchParams,
-}: {
-  searchParams: { category?: string; search?: string }
-}) {
-  const products = await getProducts(searchParams)
-  const categories = await getCategories()
-  const brands = await getBrands()
+  const handleCartClick = (productName: string) => {
+    toast({
+      title: "Added to Cart!",
+      description: `${productName} has been added to your cart.`,
+    })
+  }
 
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="border-b border-gray-200">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-20 sm:h-24">
-            <div className="flex items-center space-x-8">
-              <Link href="/" className="flex items-center space-x-2">
-                <Image
-                  src="/md-electronics-logo.png"
-                  alt="MD Electronics"
-                  width={450}
-                  height={120}
-                  className="h-16 sm:h-18 w-auto"
-                  priority
-                />
-              </Link>
-              <nav className="hidden md:flex space-x-8">
-                <Link href="/" className="text-gray-600 hover:text-blue-600">
-                  Home
-                </Link>
-                <Link href="/products" className="text-gray-900 hover:text-blue-600 font-medium">
-                  Products
-                </Link>
-                <Link href="#" className="text-gray-600 hover:text-blue-600">
-                  Pages
-                </Link>
-                <Link href="#" className="text-gray-600 hover:text-blue-600">
-                  About
-                </Link>
-                <Link href="#" className="text-gray-600 hover:text-blue-600">
-                  Blog
-                </Link>
-                <Link href="#" className="text-gray-600 hover:text-blue-600">
-                  Contact
-                </Link>
-              </nav>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="relative hidden md:block">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <Input placeholder="What are you looking for?" className="pl-10 w-64 border-gray-300" />
-              </div>
-              <Heart className="w-6 h-6 text-gray-600 hover:text-blue-600 cursor-pointer" />
-              <div className="relative">
-                <ShoppingCart className="w-6 h-6 text-gray-600 hover:text-blue-600 cursor-pointer" />
-                <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  0
-                </span>
-              </div>
-              <User className="w-6 h-6 text-gray-600 hover:text-blue-600 cursor-pointer" />
-            </div>
-          </div>
-        </div>
-      </header>
+      <MainHeader />
 
       {/* Breadcrumb */}
       <div className="bg-gray-50 py-4">
@@ -135,10 +188,10 @@ export default async function ProductsPage({
             </Link>
             <span className="text-gray-400">/</span>
             <span className="text-gray-900">Shop</span>
-            {searchParams.category && (
+            {categoryParam && (
               <>
                 <span className="text-gray-400">/</span>
-                <span className="text-gray-900 capitalize">{searchParams.category.replace("-", " ")}</span>
+                <span className="text-gray-900 capitalize">{categoryParam.replace("-", " ")}</span>
               </>
             )}
           </div>
@@ -148,8 +201,10 @@ export default async function ProductsPage({
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
-            {searchParams.category
-              ? `${searchParams.category.replace("-", " ").replace(/\b\w/g, (l) => l.toUpperCase())}`
+            {categoryParam
+              ? `${categoryParam.replace("-", " ").replace(/\b\w/g, (l) => l.toUpperCase())}`
+              : searchParam
+              ? `Search Results for "${searchParam}"`
               : "All Products"}
           </h1>
           <div className="text-sm text-gray-600">Showing {products.length} products</div>
@@ -158,21 +213,39 @@ export default async function ProductsPage({
         <div className="grid lg:grid-cols-4 gap-8">
           {/* Sidebar Filters */}
           <div className="lg:col-span-1 space-y-8">
+            {/* Search */}
+            <div>
+              <h3 className="font-bold text-gray-900 mb-4 pb-2 border-b border-gray-200">SEARCH</h3>
+              <Input
+                placeholder="Search products..."
+                value={searchQuery}
+                onChange={handleSearchChange}
+                className="w-full"
+              />
+            </div>
+
             {/* Categories */}
             <div>
               <h3 className="font-bold text-gray-900 mb-4 pb-2 border-b border-gray-200">CATEGORIES</h3>
               <div className="space-y-3">
+                <Link
+                  href="/products"
+                  className={`text-sm hover:text-blue-600 transition-colors block ${
+                    !categoryParam ? "text-blue-600 font-medium" : "text-gray-700"
+                  }`}
+                >
+                  All Categories
+                </Link>
                 {categories.map((category) => (
-                  <div key={category.id} className="flex items-center justify-between">
-                    <Link
-                      href={`/products?category=${category.slug}`}
-                      className={`text-sm hover:text-blue-600 transition-colors ${
-                        searchParams.category === category.slug ? "text-blue-600 font-medium" : "text-gray-700"
-                      }`}
-                    >
-                      {category.name}
-                    </Link>
-                  </div>
+                  <Link
+                    key={category.id}
+                    href={`/products?category=${category.slug}`}
+                    className={`text-sm hover:text-blue-600 transition-colors block ${
+                      categoryParam === category.slug ? "text-blue-600 font-medium" : "text-gray-700"
+                    }`}
+                  >
+                    {category.name}
+                  </Link>
                 ))}
               </div>
             </div>
@@ -197,10 +270,10 @@ export default async function ProductsPage({
               <h3 className="font-bold text-gray-900 mb-4 pb-2 border-b border-gray-200">PRICE RANGE</h3>
               <div className="space-y-2">
                 {[
-                  { label: "Under $500", min: 0, max: 500 },
-                  { label: "$500 - $1000", min: 500, max: 1000 },
-                  { label: "$1000 - $1500", min: 1000, max: 1500 },
-                  { label: "Over $1500", min: 1500, max: 999999 },
+                  { label: "Under ৳50,000", min: 0, max: 50000 },
+                  { label: "৳50,000 - ৳100,000", min: 50000, max: 100000 },
+                  { label: "৳100,000 - ৳150,000", min: 100000, max: 150000 },
+                  { label: "Over ৳150,000", min: 150000, max: 999999 },
                 ].map((range) => (
                   <div key={range.label} className="flex items-center space-x-2">
                     <Checkbox id={`price-${range.min}`} />
@@ -217,65 +290,97 @@ export default async function ProductsPage({
 
           {/* Products Grid */}
           <div className="lg:col-span-3">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {products.map((product) => (
-                <Link
-                  key={product.id}
-                  href={`/products/${product.slug}`}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group"
-                >
-                  <div className="relative p-4 bg-gray-50">
-                    {product.original_price && product.original_price > product.price && (
-                      <Badge className="absolute top-2 left-2 bg-blue-600 text-white">
-                        {Math.round(((product.original_price - product.price) / product.original_price) * 100)}% Off
-                      </Badge>
-                    )}
-                    <Image
-                      src={product.images[0] || "/placeholder.svg?height=200&width=200"}
-                      alt={product.name}
-                      width={200}
-                      height={200}
-                      className="w-full h-48 object-contain"
-                    />
-                  </div>
-                  <div className="p-4">
-                    <div className="flex items-center space-x-1 mb-2">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Star key={star} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      ))}
-                      <span className="text-xs text-gray-500">(4.5)</span>
-                    </div>
-                    <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">{product.name}</h3>
-                    <p className="text-xs text-gray-600 mb-2">{product.brands?.name}</p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <span className="font-bold text-gray-900">${product.price}</span>
+            {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="bg-gray-200 rounded-lg h-80 animate-pulse"></div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {products.map((product) => (
+                  <div
+                    key={product.id}
+                    className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group"
+                  >
+                    <Link href={`/products/${product.slug}`}>
+                      <div className="relative p-4 bg-gray-50">
                         {product.original_price && product.original_price > product.price && (
-                          <span className="text-sm text-gray-500 line-through">${product.original_price}</span>
+                          <Badge className="absolute top-2 left-2 bg-blue-600 text-white">
+                            {Math.round(((product.original_price - product.price) / product.original_price) * 100)}% Off
+                          </Badge>
                         )}
+                        <Image
+                          src={product.images[0] || "/placeholder.svg?height=200&width=200"}
+                          alt={product.name}
+                          width={200}
+                          height={200}
+                          className="w-full h-48 object-contain group-hover:scale-105 transition-transform duration-300"
+                        />
                       </div>
-                      <span
-                        className={`text-xs px-2 py-1 rounded ${
-                          product.stock_quantity > 10
-                            ? "bg-green-100 text-green-800"
+                    </Link>
+                    <div className="p-4">
+                      <div className="flex items-center space-x-1 mb-2">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star key={star} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                        ))}
+                        <span className="text-xs text-gray-500">(4.5)</span>
+                      </div>
+                      <Link href={`/products/${product.slug}`}>
+                        <h3 className="font-medium text-gray-900 mb-2 line-clamp-2 hover:text-blue-600 transition-colors">
+                          {product.name}
+                        </h3>
+                      </Link>
+                      <p className="text-xs text-gray-600 mb-2">{product.brands?.name}</p>
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center space-x-2">
+                          <span className="font-bold text-gray-900">৳{product.price}</span>
+                          {product.original_price && product.original_price > product.price && (
+                            <span className="text-sm text-gray-500 line-through">৳{product.original_price}</span>
+                          )}
+                        </div>
+                        <span
+                          className={`text-xs px-2 py-1 rounded ${
+                            product.stock_quantity > 10
+                              ? "bg-green-100 text-green-800"
+                              : product.stock_quantity > 0
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {product.stock_quantity > 10
+                            ? "In Stock"
                             : product.stock_quantity > 0
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {product.stock_quantity > 10
-                          ? "In Stock"
-                          : product.stock_quantity > 0
-                            ? "Low Stock"
-                            : "Out of Stock"}
-                      </span>
+                              ? "Low Stock"
+                              : "Out of Stock"}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => handleWishlistClick(product.name)}
+                        >
+                          <Heart className="w-4 h-4 mr-2" />
+                          Wishlist
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="flex-1 bg-blue-600 hover:bg-blue-700"
+                          onClick={() => handleCartClick(product.name)}
+                        >
+                          <ShoppingCart className="w-4 h-4 mr-2" />
+                          Cart
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </Link>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
 
-            {products.length === 0 && (
+            {!loading && products.length === 0 && (
               <div className="text-center py-16">
                 <p className="text-gray-500 text-lg">No products found matching your criteria.</p>
                 <Link href="/products" className="text-blue-600 hover:text-blue-700 mt-4 inline-block">
@@ -296,9 +401,9 @@ export default async function ProductsPage({
                 <Image
                   src="/md-electronics-logo.png"
                   alt="MD Electronics"
-                  width={250}
-                  height={63}
-                  className="h-16 w-auto brightness-0 invert"
+                  width={350}
+                  height={88}
+                  className="h-20 w-auto brightness-0 invert"
                 />
               </div>
               <p className="text-gray-400 text-sm">

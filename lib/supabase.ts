@@ -291,7 +291,9 @@ export const getProducts = async (filters?: {
   }
 
   if (filters?.search) {
-    query = query.ilike("name", `%${filters.search}%`)
+    // Enhanced search functionality - search across multiple fields
+    const searchTerm = `%${filters.search}%`
+    query = query.or(`name.ilike.${searchTerm},description.ilike.${searchTerm},short_description.ilike.${searchTerm},sku.ilike.${searchTerm}`)
   }
 
   if (filters?.featured) {

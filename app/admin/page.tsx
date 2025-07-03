@@ -597,7 +597,7 @@ export default function AdminPanel() {
                       <div>
                         <p className="text-sm font-medium text-gray-600">Revenue</p>
                         <p className="text-2xl font-bold text-gray-900">
-                          ${dashboardStats.totalRevenue.toLocaleString()}
+                          ৳{dashboardStats.totalRevenue.toLocaleString()}
                         </p>
                         <p className="text-xs text-gray-500">{dashboardStats.completedOrders} completed</p>
                       </div>
@@ -637,7 +637,7 @@ export default function AdminPanel() {
                           <p className="text-xs text-gray-500">{new Date(order.created_at).toLocaleDateString()}</p>
                         </div>
                         <div className="text-right">
-                          <p className="font-medium">${order.total_amount.toFixed(2)}</p>
+                          <p className="font-medium">৳{order.total_amount.toFixed(2)}</p>
                           <Badge variant={order.status === "completed" ? "default" : "secondary"}>{order.status}</Badge>
                         </div>
                       </div>
@@ -712,7 +712,7 @@ export default function AdminPanel() {
                               {product.categories?.name}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              ${product.price.toFixed(2)}
+                              ৳{product.price.toFixed(2)}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <span
@@ -809,7 +809,7 @@ export default function AdminPanel() {
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              ${order.total_amount.toFixed(2)}
+                              ৳{order.total_amount.toFixed(2)}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <Badge variant={order.status === "completed" ? "default" : "secondary"}>
@@ -937,7 +937,7 @@ export default function AdminPanel() {
 
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="price">Price *</Label>
+                <Label htmlFor="price">Price (৳) *</Label>
                 <Input
                   id="price"
                   type="number"
@@ -949,7 +949,7 @@ export default function AdminPanel() {
                 />
               </div>
               <div>
-                <Label htmlFor="original_price">Original Price</Label>
+                <Label htmlFor="original_price">Original Price (৳)</Label>
                 <Input
                   id="original_price"
                   type="number"

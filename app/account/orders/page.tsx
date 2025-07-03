@@ -15,13 +15,13 @@ const mockOrders = [
     id: "ORD-2024-001",
     date: "2024-01-15",
     status: "delivered",
-    total: 1299.99,
+    total: 129999,
     items: [
       {
         name: "Samsung French Door Refrigerator 28 cu ft",
         image: "/placeholder.svg?height=80&width=80",
         quantity: 1,
-        price: 1299.99,
+        price: 129999,
       },
     ],
   },
@@ -29,13 +29,13 @@ const mockOrders = [
     id: "ORD-2024-002",
     date: "2024-01-10",
     status: "shipped",
-    total: 899.99,
+    total: 89999,
     items: [
       {
         name: "Bosch Built-in Electric Oven 30\"",
         image: "/placeholder.svg?height=80&width=80",
         quantity: 1,
-        price: 899.99,
+        price: 89999,
       },
     ],
   },
@@ -43,19 +43,19 @@ const mockOrders = [
     id: "ORD-2024-003",
     date: "2024-01-05",
     status: "processing",
-    total: 1799.98,
+    total: 179998,
     items: [
       {
         name: "Samsung 65\" QLED 4K Smart TV",
         image: "/placeholder.svg?height=80&width=80",
         quantity: 1,
-        price: 1499.99,
+        price: 149999,
       },
       {
         name: "LG 12000 BTU Window AC Unit",
         image: "/placeholder.svg?height=80&width=80",
         quantity: 1,
-        price: 299.99,
+        price: 29999,
       },
     ],
   },
@@ -172,7 +172,7 @@ export default function OrdersPage() {
                               {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                             </Badge>
                             <p className="text-lg font-semibold text-gray-900 mt-1">
-                              ${order.total.toFixed(2)}
+                              ৳{order.total.toFixed(2)}
                             </p>
                           </div>
                         </div>
@@ -191,7 +191,7 @@ export default function OrdersPage() {
                               <div className="flex-1">
                                 <h4 className="font-medium text-gray-900">{item.name}</h4>
                                 <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
-                                <p className="text-sm font-medium text-gray-900">${item.price.toFixed(2)}</p>
+                                <p className="text-sm font-medium text-gray-900">৳{item.price.toFixed(2)}</p>
                               </div>
                             </div>
                           ))}

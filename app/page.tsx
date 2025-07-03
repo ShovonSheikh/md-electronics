@@ -2,8 +2,6 @@ import Image from "next/image"
 import Link from "next/link"
 import {
   Star,
-  Search,
-  Heart,
   ShoppingCart,
   Monitor,
   ArrowRight,
@@ -13,14 +11,13 @@ import {
   Wind,
   WashingMachine,
   Snowflake,
-  Menu,
-  User,
+  Heart,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { AccountDropdown } from "@/components/account/account-dropdown"
+import { MainHeader } from "@/components/layout/main-header"
 import { supabase } from "@/lib/supabase"
+import { useToast } from "@/hooks/use-toast"
 
 async function getFeaturedProducts() {
   const { data: products, error } = await supabase
@@ -150,9 +147,9 @@ export default async function HomePage() {
         </h3>
         <div className="flex flex-col space-y-1 mb-3">
           <div className="flex items-center space-x-2">
-            <span className="font-bold text-lg sm:text-xl text-gray-900">${product.price}</span>
+            <span className="font-bold text-lg sm:text-xl text-gray-900">৳{product.price}</span>
             {product.original_price && product.original_price > product.price && (
-              <span className="text-sm sm:text-base text-gray-500 line-through">${product.original_price}</span>
+              <span className="text-sm sm:text-base text-gray-500 line-through">৳{product.original_price}</span>
             )}
           </div>
           <p className="text-xs text-gray-600">{product.brands?.name}</p>
@@ -177,77 +174,8 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Enhanced Header with Larger Logo and Account Menu */}
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-20 sm:h-24 lg:h-28">
-            {/* Logo and Navigation */}
-            <div className="flex items-center space-x-6 lg:space-x-12">
-              <Link href="/" className="flex items-center group">
-                <Image
-                  src="/md-electronics-logo.png"
-                  alt="MD Electronics"
-                  width={450}
-                  height={110}
-                  className="h-22 sm:h-24 lg:h-28 w-auto group-hover:scale-105 transition-transform duration-300"
-                  priority
-                />
-              </Link>
-
-              <nav className="hidden lg:flex space-x-6 xl:space-x-8">
-                <Link href="/" className="text-blue-600 hover:text-blue-700 font-semibold relative">
-                  Home
-                  <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-blue-600 rounded-full"></div>
-                </Link>
-                <Link href="/products" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
-                  Products
-                </Link>
-                <Link href="#" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
-                  Categories
-                </Link>
-                <Link href="#" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
-                  About
-                </Link>
-                <Link href="#" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">
-                  Contact
-                </Link>
-              </nav>
-            </div>
-
-            {/* Search and Actions */}
-            <div className="flex items-center space-x-2 sm:space-x-4">
-              {/* Compact Search Bar */}
-              <div className="relative hidden md:block">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <Input
-                  placeholder="Search products..."
-                  className="pl-9 pr-3 py-2 w-48 lg:w-56 xl:w-64 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                />
-              </div>
-
-              <div className="flex items-center space-x-1 sm:space-x-2">
-                <Button variant="ghost" size="sm" className="p-2 sm:p-3 hover:bg-gray-100 rounded-xl">
-                  <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 hover:text-red-500 transition-colors" />
-                </Button>
-
-                <Button variant="ghost" size="sm" className="p-2 sm:p-3 hover:bg-gray-100 rounded-xl relative">
-                  <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 hover:text-blue-600 transition-colors" />
-                  <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center font-medium">
-                    0
-                  </span>
-                </Button>
-
-                {/* Account Dropdown */}
-                <AccountDropdown />
-
-                <Button variant="ghost" size="sm" className="lg:hidden p-2 sm:p-3 hover:bg-gray-100 rounded-xl">
-                  <Menu className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* Header */}
+      <MainHeader />
 
       {/* Enhanced Hero Section */}
       <section className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-12 sm:py-16 lg:py-20">
@@ -412,9 +340,9 @@ export default async function HomePage() {
                 <Image
                   src="/md-electronics-logo.png"
                   alt="MD Electronics"
-                  width={250}
-                  height={63}
-                  className="h-16 sm:h-18 w-auto brightness-0 invert"
+                  width={350}
+                  height={88}
+                  className="h-20 sm:h-22 w-auto brightness-0 invert"
                 />
               </div>
               <p className="text-gray-400 leading-relaxed text-sm sm:text-base">
